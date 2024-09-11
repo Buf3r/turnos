@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Centro Médico Ojo de Agua - Registro de Pacientes</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #4b94b1;
+            margin: 0;
+            padding: 0;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin: 0;
+            color: #333;
+            margin-left: 100px;
+        }
+
+        .logo {
+            width: 150px;
+            height: 150px;
+            margin-right: 200px;
+            border-radius: 50%;
+            background-color: #ddd;
+            background-image: url('https://via.placeholder.com/150');
+            background-size: cover;
+            background-position: center;
+            background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTzcNa8vYkyriRYh1Xb3h62uM5qAvnrWa2kA&s');
+        }
+
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 150px;
+            max-width: 600px;
+            width: 100%;
+            margin: 100px auto 0; /* Ajustar el margen superior para que no se solape con el header */
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        input, button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #listaPacientes, #proximoPaciente {
+            margin-top: 20px;
+            list-style: none;
+            padding: 0;
+        }
+
+        .paciente-item {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        button.llamar {
+            background-color: #007BFF;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button.llamar:hover {
+            background-color: #0056b3;
+        }
+
+        h2, h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .proximo-paciente-container {
+            background-color: #f1f1f1;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 30px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Centro Médico Ojo de Agua</h1>
+        <!-- Aquí puedes agregar tu logo -->
+        <div class="logo"></div>
+    </div>
+
+    <div class="container">
+        
+        <h1>Próximo Paciente</h1>
+        <div class="proximo-paciente-container" id="proximoPaciente">No hay pacientes en la lista.</div>
+        
+        <h3>Próximos 5 Pacientes</h3>
+        <ul id="listaPacientes"></ul>
+
+        <br><br><br><br><br><br>
+        <h2>Registro de Pacientes</h2>
+        <form id="formPaciente">
+            <label for="nombre">Nombre del Paciente:</label>
+            <input type="text" id="nombre" required>
+
+            <label for="consultorio">Consultorio:</label>
+            <input type="text" id="consultorio" required>
+
+            <button type="submit">Enviar</button>
+        </form>
+    </div>
+
+    <script>
+        const form = document.getElementById('formPaciente');
+        const listaPacientes = document.getElementById('listaPacientes');
+        const proximoPaciente = document.getElementById('proximoPaciente');
+
+        let pacientes = [];
+
+        // Función para actualizar la lista de pacientes
+        function actualizarLista() {
+            listaPacientes.innerHTML = '';
+            const proximos = pacientes.slice(1, 6); // Los próximos 5 después del primero
+
+            proximos.forEach((paciente, index) => {
+                const li = document.createElement('li');
+                li.classList.add('paciente-item');
+                li.textContent = `Paciente: ${paciente.nombre} - Consultorio: ${paciente.consultorio}`;
+
+                // Crear botón para mover al paciente al frente de la lista
+                const btnLlamar = document.createElement('button');
+                btnLlamar.textContent = 'Llamar';
+                btnLlamar.classList.add('llamar');
+                btnLlamar.addEventListener('click', function() {
+                    llamarPaciente(index + 1); // Llamar al paciente, sumamos 1 por el offset
+                });
+
+                li.appendChild(btnLlamar);
+                listaPacientes.appendChild(li);
+            });
+
+            if (pacientes.length > 0) {
+                proximoPaciente.textContent = `Paciente ${pacientes[0].nombre} a consultorio ${pacientes[0].consultorio}`;
+            } else {
+                proximoPaciente.textContent = 'No hay pacientes en la lista.';
+            }
+        }
+
+        // Función para llamar al paciente seleccionado
+        function llamarPaciente(index) {
+            const pacienteLlamado = pacientes.splice(index, 1)[0]; // Remover paciente de la lista
+            const consultorioProximo = pacientes.length > 0 ? pacientes[0].consultorio : null;
+
+            // Si el paciente llamado pertenece al mismo consultorio que el próximo, lo sustituye
+            if (pacienteLlamado.consultorio === consultorioProximo) {
+                pacientes[0] = pacienteLlamado; // Sustituir al próximo paciente
+            } else {
+                pacientes.unshift(pacienteLlamado); // Agregar al inicio sin sustituir
+            }
+
+            actualizarLista(); // Actualizar la lista
+        }
+
+        // Manejador de envío del formulario
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const nombre = document.getElementById('nombre').value;
+            const consultorio = document.getElementById('consultorio').value;
+
+            // Agregar paciente a la lista
+            pacientes.push({ nombre, consultorio });
+
+            // Limpiar el formulario
+            form.reset();
+
+            // Actualizar la lista de pacientes
+            actualizarLista();
+        });
+    </script>
+
+</body>
+</html>
